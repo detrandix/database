@@ -13,8 +13,14 @@ use Nette;
 /**
  * Information about tables and columns structure.
  */
-interface IDatabaseReflection extends Nette\Database\IReflection
+interface IDatabaseReflection
 {
+
+	public function getPrimary($table);
+
+	public function getHasManyReference($table, $column = NULL);
+
+	public function getBelongsToReference($table, $column = NULL);
 
 	public function rebuild();
 

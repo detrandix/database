@@ -25,30 +25,74 @@ class DiscoverConventionals implements IConventionals
 		return $this->databaseReflection->getPrimary($table);
 	}
 
-	function getHasManyReference($table, $key)
+	function getHasManyReference($table, $column)
 	{
 		try {
-			return $this->databaseReflection->getHasManyReference($table, $key);
+			$candidates = $columnCandidates = array();
+
+			$tableTargetPairs = $this->databaseReflection->getHasManyReference($table);
+
+			foreach ($tableTargetPairs as $targetPair) {
+				list($targetColumn, $targetTable) = $targetPair;
+				if (stripos($targetTable, $column) === FALSE) {
+					continue;
+				}
+
+				if (stripos($targetColumn, $table) !== FALSE) {
+					$columnCandidates[] = $candidate = array($targetTable, $targetColumn);
+					if (strtolower($targetTable) === strtolower($column)) {
+						return $candidate;
+					}
+				}
+
+				$candidates[] = array($targetTable, $targetColumn);
+			}
+
+			if (count($columnCandidates) === 1) {
+				return reset($columnCandidates);
+			} elseif (count($candidates) === 1) {
+				return reset($candidates);
+			}
+
+			foreach ($candidates as $candidate) {
+				if (strtolower($candidate[0]) === strtolower($column)) {
+					return $candidate;
+				}
+			}
+
+			if (empty($candidates)) {
+				throw new Reflection\MissingReferenceException("No reference found for \${$table}->related({$column}).");
+			} else {
+				throw new Reflection\AmbiguousReferenceKeyException('Ambiguous joining column in related call.');
+			}
 		} catch (Reflection\MissingReferenceException $e) {
 			if (!$this->databaseReflection->isRebuilded()) {
 				$this->databaseReflection->rebuild();
 
-				return $this->getHasManyReference($table, $key);
+				return $this->getHasManyReference($table, $column);
 			} else {
 				throw $e;
 			}
 		}
 	}
 
-	function getBelongsToReference($table, $key)
+	function getBelongsToReference($table, $column)
 	{
 		try {
-			return $this->databaseReflection->getBelongsToReference($table, $key);
+			$tableColumns = $this->databaseReflection->getBelongsToReference($table);
+
+			foreach ($tableColumns as $column => $targetTable) {
+				if (stripos($column, $column) !== FALSE) {
+					return array($targetTable, $column);
+				}
+			}
+
+			throw new Reflection\MissingReferenceException("No reference found for \${$table}->{$column}.");
 		} catch (Reflection\MissingReferenceException $e) {
 			if (!$this->databaseReflection->isRebuilded()) {
 				$this->databaseReflection->rebuild();
 
-				return $this->getBelongsToReference($table, $key);
+				return $this->getBelongsToReference($table, $column);
 			} else {
 				throw $e;
 			}

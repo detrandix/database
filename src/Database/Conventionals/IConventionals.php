@@ -13,8 +13,8 @@ interface IConventionals
 
 	function getPrimaryKey($table);
 
-	function getHasManyReference($table, $key);
+	function getHasManyReference($table, $column);
 
-	function getBelongsToReference($table, $key);
+	function getBelongsToReference($table, $column);
 
 }

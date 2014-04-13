@@ -74,57 +74,23 @@ class DatabaseReflection extends Nette\Object implements IDatabaseReflection
 	}
 
 
-	public function getHasManyReference($table, $key)
+	public function getHasManyReference($table, $column = NULL)
 	{
 		if (isset($this->structure['hasMany'][strtolower($table)])) {
-			$candidates = $columnCandidates = array();
-			foreach ($this->structure['hasMany'][strtolower($table)] as $targetPair) {
-				list($targetColumn, $targetTable) = $targetPair;
-				if (stripos($targetTable, $key) === FALSE) {
-					continue;
-				}
-
-				$candidates[] = array($targetTable, $targetColumn);
-				if (stripos($targetColumn, $table) !== FALSE) {
-					$columnCandidates[] = $candidate = array($targetTable, $targetColumn);
-					if (strtolower($targetTable) === strtolower($key)) {
-						return $candidate;
-					}
-				}
-			}
-
-			if (count($columnCandidates) === 1) {
-				return reset($columnCandidates);
-			} elseif (count($candidates) === 1) {
-				return reset($candidates);
-			}
-
-			foreach ($candidates as $candidate) {
-				if (strtolower($candidate[0]) === strtolower($key)) {
-					return $candidate;
-				}
-			}
+			return $this->structure['hasMany'][strtolower($table)];
 		}
 
-		if (empty($candidates)) {
-			throw new MissingReferenceException("No reference found for \${$table}->related({$key}).");
-		} else {
-			throw new AmbiguousReferenceKeyException('Ambiguous joining column in related call.');
-		}
+		throw new MissingReferenceException("No reference found for \${$table}.");
 	}
 
 
-	public function getBelongsToReference($table, $key)
+	public function getBelongsToReference($table, $column = NULL)
 	{
 		if (isset($this->structure['belongsTo'][strtolower($table)])) {
-			foreach ($this->structure['belongsTo'][strtolower($table)] as $column => $targetTable) {
-				if (stripos($column, $key) !== FALSE) {
-					return array($targetTable, $column);
-				}
-			}
+			return $this->structure['belongsTo'][strtolower($table)];
 		}
 
-		throw new MissingReferenceException("No reference found for \${$table}->{$key}.");
+		throw new MissingReferenceException("No reference found for \${$table}.");
 	}
 
 
