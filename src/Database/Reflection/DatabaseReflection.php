@@ -26,7 +26,7 @@ class DatabaseReflection extends Nette\Object implements IDatabaseReflection
 	protected $loadedStructure;
 
 	/** @var bool */
-	protected $reloaded = FALSE;
+	protected $isRebuilded = FALSE;
 
 	/**
 	 * Create autodiscovery structure.
@@ -134,7 +134,7 @@ class DatabaseReflection extends Nette\Object implements IDatabaseReflection
 
 		foreach ($this->connection->getSupplementalDriver()->getTables() as $table) {
 			if ($table['view'] == FALSE) {
-				$this->reloadForeignKeys($table);
+				$this->reloadForeignKeys($table['name']);
 			}
 		}
 

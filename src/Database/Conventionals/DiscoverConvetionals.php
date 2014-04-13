@@ -10,7 +10,7 @@ namespace Nette\Database\Conventionals;
 use Nette\Database\Reflection;
 
 
-class DiscoverConventionals implements IConvetionals
+class DiscoverConventionals implements IConventionals
 {
 
 	protected $databaseReflection;
